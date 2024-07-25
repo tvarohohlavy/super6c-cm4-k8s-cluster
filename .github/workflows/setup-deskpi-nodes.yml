@@ -73,9 +73,12 @@ jobs:
     steps:
       - name: Setup Other Tools needed later or just useful
         run: |
-          sudo apt install -y at
-          sudo apt install -y gettext moreutils tree
-          sudo apt install -y bash-completion
-          sudo apt install -y jq
-          sudo apt install -y apt-transport-https ca-certificates curl gpg
-          sudo apt install -y vim
+          sudo apt install -y at \
+                              gettext moreutils tree \
+                              bash-completion \
+                              jq \
+                              apt-transport-https \
+                              ca-certificates \
+                              curl \
+                              gpg \
+                              vim
