@@ -1,0 +1,81 @@
+name: Setup DeskPi Nodes
+on:
+  workflow_dispatch: # this means workflow can be triggered manually
+jobs:
+  setup-python:
+    # job will run in parallel on all nodes as they are defined each by label
+    # matrix can be used many other ways
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: [ deskpi01, deskpi02, deskpi03, deskpi04, deskpi05, deskpi06 ]
+    steps:
+      - name: Install Python 3.12
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential \
+                              zlib1g-dev \
+                              libncurses5-dev \
+                              libgdbm-dev \
+                              libnss3-dev \
+                              libssl-dev \
+                              libreadline-dev \
+                              libffi-dev \
+                              libsqlite3-dev \
+                              git
+          wget https://www.python.org/ftp/python/3.12.2/Python-3.12.2.tgz
+          tar -xzvf Python-3.12.2.tgz 
+          cd Python-3.12.2/
+          ./configure --enable-optimizations
+          sudo make altinstall
+      
+      - name: Checks
+        run: |
+          which python
+          python -V
+          which python3
+          python3 -V
+          which python3.12
+          python3.12 -V
+
+      - name: Cleanup
+        run: |
+          rm Python-3.12.2.tgz
+          rm -rf ~/Python-3.12.2
+
+  setup-ansible:
+    # this job requires the previous one finished with success
+    needs: [setup-python]
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: [ deskpi01, deskpi02, deskpi03, deskpi04, deskpi05, deskpi06 ]
+    steps:
+      - name: Install latest Ansible with useful requirements
+        run: |
+          python3.12 -m pip install --user ansible
+          python3.12 -m pip install --user netaddr
+          python3.12 -m pip install --user jmespath
+      
+      - name: Checks
+        run: |
+          # Workaround in case of locale issues
+          # export LC_ALL=C.UTF-8
+          # Workaround in case of path issues
+          # export PATH=/home/$USER/.local/bin:$PATH
+          ansible --version
+
+  setup-other-tools:
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner: [ deskpi01, deskpi02, deskpi03, deskpi04, deskpi05, deskpi06 ]
+    steps:
+      - name: Setup Other Tools needed later or just useful
+        run: |
+          sudo apt install -y at
+          sudo apt install -y gettext moreutils tree
+          sudo apt install -y bash-completion
+          sudo apt install -y jq
+          sudo apt install -y apt-transport-https ca-certificates curl gpg
+          sudo apt install -y vim
